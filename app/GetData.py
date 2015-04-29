@@ -2,15 +2,19 @@ import os, sys, gdal, math, time
 from gdalconst import *
 
 path=os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-FILENAME = path+'/data/Mercator.tif'
+FILENAME = path+'/data/world.vrt'
 NULL_VALUE = -9999
 
 # register all of the drivers
 gdal.AllRegister()
 gdal.UseExceptions()
+
+
+'''
+This functions opens the raster file for processing
+'''
 def opentiff():
     try:
-        # open the image
         ds = gdal.Open(FILENAME, GA_ReadOnly)
     except RuntimeError, e:
         print 'Unable to open '+FILENAME
@@ -18,6 +22,11 @@ def opentiff():
         sys.exit(1)
     return ds
 
+
+'''
+This function will change the given Pseudo/Mercator coordinates and convert
+to WGS 84 lat/lon coordinate
+'''
 def ToGeographic(mercatorX_lon, mercatorY_lat):
     if (math.fabs(mercatorX_lon) < 180 and math.fabs(mercatorY_lat) < 90):
         return
@@ -34,6 +43,11 @@ def ToGeographic(mercatorX_lon, mercatorY_lat):
     mercatorY_lat = num7 * 57.295779513082323
     return [mercatorX_lon,mercatorY_lat]
 
+
+'''
+This function will change the given WGS 84 lat/lon coordinate and convert
+to Pseudo/Mercator coordinates
+'''
 def ToWebMercator(mercatorX_lon, mercatorY_lat):
     if ((math.fabs(mercatorX_lon) > 180 or math.fabs(mercatorY_lat) > 90)):
         return
@@ -45,7 +59,32 @@ def ToWebMercator(mercatorX_lon, mercatorY_lat):
     return [mercatorX_lon,mercatorY_lat]
 
 
+'''
+This function will read the list of values and call the calculateDistance() 
+to return the information regarding the nearest point.
+'''
+def findClosest(list, origin):
+    newlist = []
+    for x in range(len(list)):
+        distance = calculateDistance(int(list[x][0]),int(list[x][1]),int(origin[0]),int(origin[1]))
+        latlon=ToGeographic(list[x][0],list[x][1])
+        newlist.append([latlon[0], latlon[1], list[x][2], int(distance)])
+    maxlist = newlist[0]
+    for i in range(1, len(newlist)):
+        if maxlist[3]> newlist[i][3]:
+            maxlist=newlist[i]
+    return  maxlist
 
+
+'''
+This is to find the nearest point to the original point
+'''
+def calculateDistance(x1, y1, x2, y2):
+    return math.sqrt(abs((y1-y2)*(y1-y2))+abs((x1-x2)*(x1-x2)))
+
+'''
+This function will take in the given coordinates and return the elevation(band)
+'''
 def retrieveband(x,y):
     if -180.0>x>180.0 or -90>y>90:
 	return NULL_VALUE
@@ -59,62 +98,44 @@ def retrieveband(x,y):
         cols = ds.RasterXSize
         rows = ds.RasterYSize
         band= ds.GetRasterBand(1)
-        data = band.ReadAsArray(0, 0, cols, rows)#Building the narray to the total width and total height
-	if data[yOffset,xOffset]<0:
-		return -9999
-	else:
-        	return data[yOffset,xOffset]
+        data = band.ReadAsArray(xOffset,yOffset,1,1)#Building the narray to the total width and total height
+        return data[0]
 
-
+'''
+This function will take in the given coordinates and return the highest elevation(band)
+and nearest elevation to the original point
+'''
 def retrieveHighPoint(lon,lat,r):
     if -180.0>lon>180.0 or -90>lat>90:
 	return NULL_VALUE
     else:
-        ds=opentiff()
-        a= b =r
-        merc = ToWebMercator(lon, lat)
-        x = int(merc[0]-r)
-        y = int(merc[1]-r)
-        m=0
-        xy=[]
-        xa= [x for x in range(x,x+(r*2),30)]
-        ya= [y for y in range(y,y+(r*2),30)]
-        transform = ds.GetGeoTransform()
-        # get georeference info from rasterfile
-        band= ds.GetRasterBand(1)
-        cols = ds.RasterXSize
-        rows = ds.RasterYSize
-        data = band.ReadAsArray(0, 0, cols, rows) #Building the narray to the total width and total height
-        map_ = [[NULL_VALUE for x in range(len(xa))] for y in range(len(ya))] #this is used for visualisation
-        for y in range(len(xa)):
-            for x in range(len(ya)):
-                xOffset = int((xa[x] - transform[0]) / transform[1]) #(X-Coor - Xorigin) / Pixel Width
-                yOffset = int((ya[y] - transform[3]) / transform[5]) #(Y-Coor - Yorigin) / Pixel Height
-                point= [xOffset, yOffset]
-                if (x-(a/30))**2 + (y-(b/30))**2 < (r/30)**2:
-                    if xOffset > 0 or yOffset > 0 or xOffset < cols or yOffset < rows:
-                        map_[y][x] = int(data[yOffset,xOffset]) #this is used for visualisation
-			#print m
-                        if m < int(data[yOffset,xOffset]):
-                            xy = []
-                            m = int(data[yOffset,xOffset])
-                            xy.append((xa[x], ya[y], m))
-                        elif m == int(data[yOffset,xOffset]):
-                            xy.append((xa[x], ya[y], m))
+	ds = gdal.Open(FILENAME, GA_ReadOnly)
+	a = b = r
+	m=0
+	xy=[]
+	merc = ToWebMercator(lon, lat)
+	x = int(merc[0]-r)
+	y = int(merc[1]-r)
+	transform = ds.GetGeoTransform()
+	band= ds.GetRasterBand(1)
+	xa= [x for x in range(x,x+(r*2),30)]
+	ya= [y for y in range(y,y+(r*2),30)]
+	# get georeference info from rasterfile
+	#map_ = [[NULL_VALUE for x in range(len(xa))] for y in range(len(ya))]
+	for y in range(len(xa)):
+	    for x in range(len(ya)):
+		xOffset = int((xa[x] - transform[0]) / transform[1]) #(X-Coor - Xorigin) / Pixel Width
+		yOffset = int((ya[y] - transform[3]) / transform[5]) #(Y-Coor - Yorigin) / Pixel Height
+		data = band.ReadAsArray(xOffset,yOffset,1,1)
+		if (x-(a/30))**2 + (y-(b/30))**2 < (r/30)**2:
+		    #map_[y][x] =int(data[0])
+		    if m < int(data[0]):
+		        xy = []
+		        m = int(data[0])
+		        xy.append((xa[x], ya[y], m))
+		    elif m == int(data[0]):
+		        xy.append((xa[x], ya[y], m))
         return findClosest(xy,merc)
     
-def findClosest(list, origin):
-    newlist = []
-    for x in range(len(list)):
-        distance = calculateDistance(list[x][0],list[x][1],origin[0],origin[1])
-        latlon=ToGeographic(list[x][0],list[x][1])
-        newlist.append([latlon[0], latlon[1], list[x][2], distance])
-    maxlist = newlist[0]
-    for i in range(len(newlist)):
-        if maxlist[3]< newlist[i][3]:
-            maxlist=newlist[i]
-    return  maxlist
 
-def calculateDistance(x1, y1, x2, y2):
-    return math.sqrt(abs((y1-y2)*(y1-y2))+abs((x1-x2)*(x1-x2)))
 
