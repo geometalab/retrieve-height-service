@@ -1,3 +1,8 @@
+'''
+Created on 28 March 2015
+Created by Eugene Phua
+'''
+
 import os, sys, gdal, math, time
 from gdalconst import *
 
