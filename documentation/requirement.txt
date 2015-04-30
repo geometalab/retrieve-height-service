@@ -1,6 +1,8 @@
 Flask==0.10.1
 itsdangerous==0.24
 Jinja2==2.7.3
-numpy==1.9.2
+numpy==1.8.2
 psycopg2==2.5.5
 Werkzeug==0.10.4
+GDAK==1.11.1
+Flask-Testing==0.4.2

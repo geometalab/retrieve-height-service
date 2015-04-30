@@ -1,7 +1,3 @@
-'''
-Created on 28 March 2015
-Created by Eugene Phua
-'''
 from flask import *
 import jinja2, os
 from app import GetData
@@ -23,12 +19,10 @@ def highestelevationnearby():
         r = request.args.get('radius')
     else:
         abort(400)
-    data = GetData.retrieveHighPoint(float(x),float(y),int(r))
-
-    if int(r)>2100:
-        return 'r is too large of a radius'
-    elif int(r)<120:
-        return 'r is too small of a radius'
-    else:
+    if 120<int(r)<2100:
+        data = GetData.retrieveHighPoint(float(x),float(y),int(r))
         return jsonify(type="Point", coordinates=data)
+    else:
+        return 'Radius must be in between 120 and 2100'
+
 
