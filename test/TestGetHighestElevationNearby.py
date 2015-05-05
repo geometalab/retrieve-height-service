@@ -1,38 +1,39 @@
-'''
-Created on 30 April 2015
-Created by Eugene Phua
-'''
-
+"""
+Created on 280415
+Created by Phua Joon Kai Eugene
+Last Modification on 050515
+"""
 from test.TestBase import BaseTestCase
-import unittest
+
 
 class TestGetHeightResponse(BaseTestCase):
-     def test_get_correct(self):
+    def test_get_correct(self):
         response = self.client.get("/dtm/v1/highestelevationnearby?lat=48&lon=8&radius=400")
         self.assert200(response)
 
-     def test_missing_lat(self):
+    def test_missing_lat(self):
         response = self.client.get("/dtm/v1/highestelevationnearby?lon=8&radius=400")
         self.assert400(response)
 
-     def test_missing_lon(self):
+    def test_missing_lon(self):
         response = self.client.get("/dtm/v1/highestelevationnearby?lat=47&radius=400")
         self.assert400(response)
 
-     def test_missing_radius(self):
+    def test_missing_radius(self):
         response = self.client.get("/dtm/v1/highestelevationnearby?lat=47&lon=8")
         self.assert400(response)
 
-     def test_missing_all(self):
+    def test_missing_all(self):
         response = self.client.get("/dtm/v1/highestelevationnearby")
         self.assert400(response)
 
-     def test_response(self):
+    def test_response(self):
         response = self.client.get("/dtm/v1/highestelevationnearby?lat=48&lon=8&radius=10")
         self.assertEqual(response.data,'Radius must be in between 120 and 2100')
 
+
 class TestGetHeightMain(BaseTestCase):
-    def test_radius_inbetween(self):
+    def test_radius_in_between(self):
         response = self.client.get("/dtm/v1/highestelevationnearby?lat=48&lon=8&radius=400")
         geojson = [8.002057803644078, 47.99885289735797, 654, 298]
         self.assertEqual(response.json['coordinates'], geojson)

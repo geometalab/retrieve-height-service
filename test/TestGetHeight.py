@@ -1,10 +1,10 @@
-'''
-Created on 30 April 2015
-Created by Eugene Phua
-'''
-
+"""
+Created on 280415
+Created by Phua Joon Kai Eugene
+Last Modification on 050515
+"""
 from test.TestBase import BaseTestCase
-import unittest
+
 
 class TestGetHeightResponse(BaseTestCase):
     def test_get_correct_height(self):
@@ -34,6 +34,7 @@ class TestGetHeightResponse(BaseTestCase):
     def test_missing_all(self):
         response = self.client.get("/dtm/v1/elevation")
         self.assert400(response)
+
 
 class TestGetHeightMain(BaseTestCase):
     def test_correct_raw(self):
