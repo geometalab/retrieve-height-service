@@ -5,7 +5,7 @@ Last Modification on 050515
 """
 from flask import Blueprint, request, abort, jsonify
 from app import GetData
-ELE = Blueprint("ELE", __name__)
+ELE = Blueprint("ele", __name__)
 
 
 @ELE.route('/dtm/v1/elevation', methods=['GET'])
@@ -34,8 +34,9 @@ def elevation():
     elif output_type.lower() == 'raw':
         return str(data)
     else:
-        return jsonify(type="Point", coordinates=data)
-
+        return jsonify({"type": "Feature",
+                        "geometry": {"type": "Point",
+                                     "coordinates": data}})
 
 
 

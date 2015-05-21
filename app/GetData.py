@@ -86,9 +86,11 @@ def find_closest(height, origin):
     for i in range(len(height)):
         distance = calculate_distance(int(height[i][0]), int(height[i][1]),
                                       int(origin[0]), int(origin[1]))
+        azimuth = calculate_azimuth(int(height[i][0]), int(height[i][1]),
+                                    int(origin[0]), int(origin[1]))
         geographic = to_geographic(height[i][0], height[i][1])
         new_list.append([geographic[0], geographic[1],
-                         height[i][2], int(distance)])
+                         height[i][2], int(distance), azimuth])
     max_list = new_list[0]
     for j in range(1, len(new_list)):
         if max_list[3] > new_list[j][3]:
@@ -105,8 +107,31 @@ def calculate_distance(give_x, give_y, origin_x, origin_y):
     origin_x - the point of origin defined by user
     origin_y - the point of origin defined by user
     """
-    return math.sqrt(abs((give_y-origin_y)*(give_y-origin_y)) +
-                     abs((give_x-origin_x)*(give_x-origin_x)))
+    return math.sqrt(abs((give_y-origin_y)**2) +
+                     abs((give_x-origin_x)**2))
+
+
+def calculate_azimuth(give_x, give_y, origin_x, origin_y):
+    """
+    This is to find the azimuth from the original location to the
+    highest point
+
+    give_x - the longitude of the possible height
+    give_y - the latitude of the possible height
+    origin_x - the point of origin defined by user
+    origin_y - the point of origin defined by user
+    """
+    opposite = (give_y-origin_y)
+    adjacent = (give_x-origin_x)
+    azimuth = math.degrees(math.atan((abs(opposite)*1.0/abs(adjacent))))
+    if opposite < 0 < adjacent:
+        return azimuth + 90
+    elif adjacent < 0 and opposite < 0:
+        return azimuth + 180
+    elif opposite > 0 > adjacent:
+        return azimuth + 270
+    else:
+        return azimuth
 
 
 def retrieve_band(longitude, latitude):
@@ -171,3 +196,4 @@ def retrieve_highest_point(lon, lat, rad):
                     height_list.append((x_coordinate[x_value],
                                         y_coordinate[y_value], highest))
     return find_closest(height_list, mercator)
+

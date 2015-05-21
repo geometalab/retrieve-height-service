@@ -30,8 +30,11 @@ def highest_elevation_nearby():
     if 120 < int(radius) < 2100:
         data = GetData.retrieve_highest_point(
             float(x_value), float(y_value), int(radius))
-        return jsonify(type="Point", coordinates=data)
+        return jsonify({"type": "Feature",
+                        "geometry": {"type": "Point",
+			"coordinates": [data[0], data[1], data[2]]},
+                        "properties":
+			{"distance": data[3], "azimuth": data[4]}})
     else:
         return 'Radius must be in between 120 and 2100'
-
 
