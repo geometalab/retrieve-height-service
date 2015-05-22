@@ -19,6 +19,8 @@ RUN pip install \
 EXPOSE 55555
 EXPOSE 5000
 
+VOLUME /retrieve-height-service/data
+
 WORKDIR /retrieve-height-service
 
 CMD python run.py
