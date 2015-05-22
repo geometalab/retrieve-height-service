@@ -39,7 +39,7 @@ class TestGetHeightResponse(BaseTestCase):
 class TestGetHeightMain(BaseTestCase):
     def test_correct_raw(self):
         response = self.client.get("/dtm/v1/elevation?lat=47&lon=8&format=raw")
-        raw = [8.0, 47.0, 919]
+        raw =[8.0, 47.0, 919]
         self.assertEqual(response.json, raw)
 
     def test_correct_json(self):
@@ -50,14 +50,15 @@ class TestGetHeightMain(BaseTestCase):
     def test_correct_geojson(self):
         response = self.client.get("/dtm/v1/elevation?lat=47&lon=8&format=geojson")
         geojson = [8.0, 47.0, 919]
-        self.assertEqual(response.json['coordinates'], geojson)
-        self.assertEqual(response.json['type'], 'Point')
+        a = response.json['geometry']['coordinates']
+        self.assertEqual(response.json['geometry']['coordinates'], geojson)
+        self.assertEqual(response.json['geometry']['type'], 'Point')
 
     def test_default_geojson(self):
         response = self.client.get("/dtm/v1/elevation?lat=47&lon=8")
         geojson = [8.0, 47.0, 919]
-        self.assertEqual(response.json['coordinates'], geojson)
-        self.assertEqual(response.json['type'], 'Point')
+        self.assertEqual(response.json['geometry']['coordinates'], geojson)
+        self.assertEqual(response.json['geometry']['type'], 'Point')
 
     def test_different_order(self):
         response = self.client.get("/dtm/v1/elevation?format=json&lon=8&lat=47")

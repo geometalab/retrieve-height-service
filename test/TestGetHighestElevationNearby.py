@@ -33,11 +33,12 @@ class TestGetHeightResponse(BaseTestCase):
 
 
 class TestGetHeightMain(BaseTestCase):
-    def test_radius_in_between(self):
+    def test_correct_geojson(self):
         response = self.client.get("/dtm/v1/highestelevationnearby?lat=48&lon=8&radius=400")
-        geojson = [8.002057803644078, 47.99885289735797, 654, 298]
-        self.assertEqual(response.json['coordinates'], geojson)
-        self.assertEqual(response.json['type'], 'Point')
+        geojson = [8.002057803644078, 47.99885289735797, 654]
+        a = response.json['geometry']['coordinates']
+        self.assertEqual(response.json['geometry']['coordinates'], geojson)
+        self.assertEqual(response.json['geometry']['type'], 'Point')
 
     def test_radius_less(self):
         response = self.client.get("/dtm/v1/highestelevationnearby?lat=48&lon=8&radius=10")
