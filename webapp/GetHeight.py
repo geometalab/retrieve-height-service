@@ -4,11 +4,14 @@ Created by Phua Joon Kai Eugene
 Last Modification on 050515
 """
 from flask import Blueprint, request, abort, jsonify
-from app import GetData
-ELE = Blueprint("ele", __name__)
 
+from app import GetData
+
+ELE = Blueprint("ele", __name__)
+from app.Decorator_HTTP_Access_Control import cross_domain
 
 @ELE.route('/dtm/v1/elevation', methods=['GET'])
+@cross_domain(origin='*')
 def elevation():
     """
     This function will GET the url variable and assign

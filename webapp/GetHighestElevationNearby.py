@@ -4,10 +4,15 @@ Created by Phua Joon Kai Eugene
 Last Modification on 050515
 """
 from flask import Blueprint, request, abort, jsonify
+
 from app import GetData
+from app.Decorator_HTTP_Access_Control import cross_domain
+
+
 HIGH_ELE = Blueprint("HIGH_ELE", __name__)
 
 @HIGH_ELE.route('/dtm/v1/highestelevationnearby', methods=['GET'])
+@cross_domain(origin='*')
 def highest_elevation_nearby():
     """
     This function will GET the url variable and assign
@@ -32,9 +37,8 @@ def highest_elevation_nearby():
             float(x_value), float(y_value), int(radius))
         return jsonify({"type": "Feature",
                         "geometry": {"type": "Point",
-			"coordinates": [data[0], data[1], data[2]]},
-                        "properties":
-			{"distance": data[3], "azimuth": data[4]}})
+                                     "coordinates": [data[0], data[1], data[2]]},
+                        "properties": {"distance": data[3], "azimuth": data[4]}})
     else:
         return 'Radius must be in between 120 and 2100'
 
