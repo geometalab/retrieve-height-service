@@ -39,7 +39,7 @@ def elevation():
     else:
         return jsonify({"type": "Feature",
                         "geometry": {"type": "Point",
-                                     "coordinates": data}})
+                                     "coordinates": data},
 
 
 
