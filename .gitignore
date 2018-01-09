@@ -2,4 +2,5 @@ ext_config.py
 *.pyc
 *.idea
 *.tif
-data/*.zip
+*.zip
+*.hgt
