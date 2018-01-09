@@ -1,5 +1,5 @@
 #!/bin/bash
-cd data
+# wget -L --random-wait --timestamping --load-cookies ~/.cookies --save-cookies ~/.cookies -i data_list_2018-01-09.txt
 # only execute this once, therefore commented
 
 # normal execution
