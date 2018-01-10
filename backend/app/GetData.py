@@ -3,29 +3,18 @@ Created on 160315
 Created by Phua Joon Kai Eugene
 Last Modification on 050515
 """
-import os
-import sys
-import gdal
 import math
-from gdalconst import GA_ReadOnly
+import os
+import numpy as np
+
+from osgeo import gdal
+from osgeo.gdalconst import GA_ReadOnly
+
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 FILENAME = PATH + '/data/world.vrt'
 NULL_VALUE = -9999
 gdal.AllRegister()
 gdal.UseExceptions()
-
-
-def open_raster():
-    """
-    This functions opens the raster file for processing
-    """
-    try:
-        raster = gdal.Open(FILENAME, GA_ReadOnly)
-    except RuntimeError, exception:
-        print 'Unable to open '+FILENAME
-        print exception
-        sys.exit(1)
-    return raster
 
 
 def to_geographic(mercator_x_lon, mercator_y_lat):
@@ -84,13 +73,11 @@ def find_closest(height, origin):
     """
     new_list = []
     for i in range(len(height)):
-        distance = calculate_distance(int(height[i][0]), int(height[i][1]),
-                                      int(origin[0]), int(origin[1]))
-        azimuth = calculate_azimuth(int(height[i][0]), int(height[i][1]),
-                                    int(origin[0]), int(origin[1]))
-        geographic = to_geographic(height[i][0], height[i][1])
+        distance = int(calculate_distance(height[i][0], height[i][1], origin[0], origin[1]))
+        azimuth = int(calculate_azimuth(height[i][0], height[i][1], origin[0], origin[1]))
+        geographic = [height[i][0], height[i][1]]
         new_list.append([geographic[0], geographic[1],
-                         height[i][2], int(distance), azimuth])
+                         height[i][2], distance, azimuth])
     max_list = new_list[0]
     for j in range(1, len(new_list)):
         if max_list[3] > new_list[j][3]:
@@ -107,9 +94,14 @@ def calculate_distance(give_x, give_y, origin_x, origin_y):
     origin_x - the point of origin defined by user
     origin_y - the point of origin defined by user
     """
-    return math.sqrt(abs((give_y-origin_y)**2) +
-                     abs((give_x-origin_x)**2))
-
+    lon1, lat1, lon2, lat2 = map(math.radians, [origin_x, origin_y, give_x, give_y])
+    EARTH_RADIUS = 6371.0088  # radius of the earth in km
+    # haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+    distance = 2 * math.asin(math.sqrt(a))
+    return distance * EARTH_RADIUS * 1000 # in meters
 
 def calculate_azimuth(give_x, give_y, origin_x, origin_y):
     """
@@ -121,6 +113,7 @@ def calculate_azimuth(give_x, give_y, origin_x, origin_y):
     origin_x - the point of origin defined by user
     origin_y - the point of origin defined by user
     """
+    origin_x, origin_y, give_x, give_y = map(math.radians, [origin_x, origin_y, give_x, give_y])
     opposite = (give_y-origin_y)
     adjacent = (give_x-origin_x)
     azimuth = math.degrees(math.atan((abs(opposite)*1.0/abs(adjacent))))
@@ -146,9 +139,9 @@ def retrieve_band(longitude, latitude):
     if -180.0 > longitude > 180.0 or -90 > latitude > 90:
         return NULL_VALUE
     else:
-        raster = open_raster()
+        raster = gdal.Open(FILENAME, GA_ReadOnly)
         transform = raster.GetGeoTransform()
-        mercator = to_mercator(longitude, latitude)
+        mercator = [longitude, latitude]
         x_offset = int((mercator[0] - transform[0]) / transform[1])
         y_offset = int((mercator[1] - transform[3]) / transform[5])
         band = raster.GetRasterBand(1)
@@ -180,20 +173,18 @@ def retrieve_highest_point(lon, lat, rad):
                           int(mercator[1]-rad)+(rad*2), 30)]
     for y_value in range(len(x_coordinate)):
         for x_value in range(len(y_coordinate)):
-            x_offset = int((x_coordinate[x_value] -
-                            transform[0]) / transform[1])
-            y_offset = int((y_coordinate[y_value] -
-                            transform[3]) / transform[5])
+            x_coord, y_coord = to_geographic(x_coordinate[x_value], y_coordinate[y_value])
+            x_offset = int((x_coord - transform[0]) / transform[1])
+            y_offset = int((y_coord - transform[3]) / transform[5])
             data = band.ReadAsArray(x_offset, y_offset, 1, 1)
-            if (x_value-(rad/30))**2 + (y_value-(rad/30))**2 < \
-                            (rad/30)**2:
+            if (x_value-(rad/30))**2 + (y_value-(rad/30))**2 < (rad/30)**2:
                 if highest < int(data[0]):
                     height_list = []
                     highest = int(data[0])
-                    height_list.append((x_coordinate[x_value],
-                                        y_coordinate[y_value], highest))
+                    height_list.append((x_coord,
+                                        y_coord, highest))
                 elif highest == int(data[0]):
-                    height_list.append((x_coordinate[x_value],
-                                        y_coordinate[y_value], highest))
-    return find_closest(height_list, mercator)
+                    height_list.append((x_coord,
+                                        y_coord, highest))
+    return find_closest(height_list, [lon, lat])
 

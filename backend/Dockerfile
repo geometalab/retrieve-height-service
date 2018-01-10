@@ -1,22 +1,24 @@
-FROM ubuntu:15.04
+FROM ubuntu:16.04
 
-MAINTAINER Mirko Stocker
+LABEL maintainer="Geometalab <geometalab@hsr.ch>"
 
-RUN apt-get update
+RUN apt-get update \
+	&& apt-get install -y \
+	tar git curl nano wget dialog net-tools build-essential \
+	python python-dev python-distribute python-pip pypy-dev \
+	libgdal-dev libgdal1-dev python-gdal \
+	&& rm -rf /var/lib/apt/lists/*
 
-RUN apt-get install -y tar git curl nano wget dialog net-tools build-essential
+COPY requirement.txt /tmp/requirement.txt
+RUN pip install -r /tmp/requirement.txt
 
-RUN apt-get install -y python python-dev python-distribute python-pip pypy-dev
-
-RUN apt-get install -y libgdal-dev libgdal1-dev python-numpy
+COPY requirement-GDAL.txt /tmp/requirement-GDAL.txt
+RUN pip install \
+	--global-option=build_ext --global-option="-I/usr/include/gdal" \
+	-r /tmp/requirement-GDAL.txt
 
 ADD . /retrieve-height-service
 
-RUN pip install \
-	--global-option=build_ext --global-option="-I/usr/include/gdal" \
-	-r /retrieve-height-service/documentation/requirement.txt
-
-EXPOSE 55555
 EXPOSE 5000
 
 VOLUME /retrieve-height-service/data

@@ -4,3 +4,4 @@ ext_config.py
 *.tif
 *.zip
 *.hgt
+*.vrt

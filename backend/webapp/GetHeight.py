@@ -37,9 +37,12 @@ def elevation():
     elif output_type.lower() == 'raw':
         return str(data)
     else:
-        return jsonify({"type": "Feature",
-                        "geometry": {"type": "Point",
-                                     "coordinates": data},
-
-
-
+        return jsonify(
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": data
+                },
+            }
+        )
