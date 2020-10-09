@@ -1,7 +1,0 @@
-Flask==0.10.1
-Jinja2==2.7.3
-psycopg2>=2.5.5,<3
-Werkzeug==0.10.4
-Flask-Testing==0.4.2
-numpy==1.14.0
-raven[flask]

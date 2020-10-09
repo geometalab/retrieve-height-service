@@ -23,7 +23,8 @@ Next steps:
 unzip *.zip
 
 # build worldfile
-gdalbuildvrt -a_srs EPSG:3857 world.vrt *.hgt
+# gdalbuildvrt -a_srs EPSG:3857 world.vrt *.hgt
+gdalbuildvrt world.vrt *.hgt
 
 # healthcheck of worldfile
 gdalinfo -mm world.vrt

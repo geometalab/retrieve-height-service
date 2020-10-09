@@ -5,8 +5,8 @@ Last Modification on 050515
 """
 
 from flask import Flask
-from GetHeight import ELE
-from GetHighestElevationNearby import HIGH_ELE
+from .GetHeight import ELE
+from .GetHighestElevationNearby import HIGH_ELE
 
 
 app = Flask(__name__)

@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.8'
 services:
   elevation-service:
     image: geometalab/elevation-service
@@ -8,8 +8,6 @@ services:
     environment:
       - DEBUG=on
     volumes:
-      - ./backend/webapp:/retrieve-height-service/webapp
-      - ./backend/app:/retrieve-height-service/app
-      - ./data:/retrieve-height-service/data
+      - ./backend:/retrieve-height-service
     ports:
       - "8080:5000"

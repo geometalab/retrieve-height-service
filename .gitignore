@@ -5,3 +5,4 @@ ext_config.py
 *.zip
 *.hgt
 *.vrt
+.vscode/
