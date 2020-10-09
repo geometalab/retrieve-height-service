@@ -1,0 +1,15 @@
+version: '3.3'
+services:
+  elevation-service:
+    image: geometalab/elevation-service
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    environment:
+      - DEBUG=on
+    volumes:
+      - ./backend/webapp:/retrieve-height-service/webapp
+      - ./backend/app:/retrieve-height-service/app
+      - ./data:/retrieve-height-service/data
+    ports:
+      - "8080:5000"

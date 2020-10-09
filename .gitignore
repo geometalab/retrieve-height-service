@@ -2,3 +2,6 @@ ext_config.py
 *.pyc
 *.idea
 *.tif
+*.zip
+*.hgt
+*.vrt
